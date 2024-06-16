@@ -9,7 +9,6 @@ OBJECTS=.out/app/kernel/Main.o \
 LIBS=-lcgicc \
 	 -lpng \
 	 -lcurl \
-	 $(if $(echo "int main() { return 0; }" | $(CXX) -xc++ - -lstdc++exp -o has_stdc++exp && rm has_stdc++exp), -lstdc++exp, ) \
 
 .out/%.o: %.cpp
 	mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -18,7 +17,12 @@ LIBS=-lcgicc \
 	mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(SYSTEM_HEADERS) $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o index.cgi $(OBJECTS) $(LIBS)
+	if `echo "int main() { return 0; }" | $(CXX) -xc++ - -lstdc++exp -o has_stdc++exp && rm has_stdc++exp`; \
+	then \
+		$(CXX) $(CXXFLAGS) -o index.cgi $(OBJECTS) $(LIBS) -lstdc++exp; \
+	else \
+		$(CXX) $(CXXFLAGS) -o index.cgi $(OBJECTS) $(LIBS); \
+	fi
 
 clean:
 	rm -rf $(OBJECTS) .out index.cgi
