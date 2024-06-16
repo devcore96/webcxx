@@ -1,0 +1,10 @@
+[](std::map<std::string, std::any> params) { return view(R"~(<!DOCTYPE html>
+<html class="w-full h-full">
+    <head>
+        <title>Webcxx</title>
+    </head>
+    <body>
+        <p>Hello world</p>
+    </body>
+</html>
+)~", 200); }

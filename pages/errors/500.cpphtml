@@ -1,0 +1,18 @@
+[](std::map<std::string, std::any> params) {
+    std::stringstream out;
+    std::exception* e = std::any_cast<std::exception*>(params["e"]);
+    
+    out << R"(<!DOCTYPE html>
+<html>
+    <head>
+        <title>Internal Server Error</title>
+    </head>
+    <body>
+        <h1>500 - Internal Server Error</h1>
+        <h2>)" << e->what() << R"(</h2>
+        <pre>)" << std::stacktrace::current() << R"(</pre>
+    </body>
+</html>)";
+
+    return view(out.str(), 500);
+}
