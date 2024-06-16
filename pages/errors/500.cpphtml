@@ -10,7 +10,13 @@
     <body>
         <h1>500 - Internal Server Error</h1>
         <h2>)" << e->what() << R"(</h2>
-        <pre>)" << std::stacktrace::current() << R"(</pre>
+        <pre>)" <<
+#ifdef __cpp_lib_stacktrace
+std::stacktrace::current()
+#else
+"Stacktrace unavaliable"
+#endif
+<< R"(</pre>
     </body>
 </html>)";
 

@@ -1,5 +1,8 @@
-#include <stacktrace>
 #include <exception>
+
+#ifdef __cpp_lib_stacktrace
+# include <stacktrace>
+#endif
 
 #include <signal.h>
 
