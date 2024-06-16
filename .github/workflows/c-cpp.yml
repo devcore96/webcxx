@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: install cgicc
-      run: sudo apt install -y libcgicc-dev libcurl-dev
+      run: sudo apt install -y libcgicc-dev libcurl4-openssl-dev
     - name: make
       run: make
