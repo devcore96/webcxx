@@ -8,7 +8,10 @@
 #include "../app/services/Env.hpp"
 
 #include <chrono>
-#include <format>
+
+#ifdef __cpp_lib_format
+# include <format>
+#endif
 
 void init_routes() {
     route("/", 

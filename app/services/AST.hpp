@@ -7,7 +7,7 @@
 #include <optional>
 #include <functional>
 
-#ifdef _WIN32
+#ifdef __cpp_lib_format
 # include <format>
 #endif
 
@@ -74,7 +74,7 @@ namespace ast {
                                 return matched_token;
                             }
                             
-#ifdef _WIN32
+#ifdef __cpp_lib_format
                             return std::format("syntax error: unexpected token \"{}\".", string_value);
 #else
                             return "syntax error: unexpected token \"" + string_value + "\".";
@@ -83,7 +83,7 @@ namespace ast {
                     }
                 }
 
-#ifdef _WIN32
+#ifdef __cpp_lib_format
                 return std::format("syntax error: expected token {}.", token);
 #else
                 return "syntax error: expected token " + std::to_string(token) + ".";
@@ -117,7 +117,7 @@ namespace ast {
                 }
             }
 
-#ifdef _WIN32
+#ifdef __cpp_lib_format
             std::string error_string = std::format("ast::basic_parser::resolve(std::basic_string<CharT>& string, int token)\n"
                                                    "syntax error: ran into {} errors while trying to resolve token {}.", errors.size(), token);
 #else
