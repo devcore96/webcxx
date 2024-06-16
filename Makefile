@@ -7,9 +7,9 @@ OBJECTS=.out/app/kernel/Main.o \
 		.out/routes/Routes.o \
 
 LIBS=-lcgicc \
-     -lstdc++exp \
 	 -lpng \
 	 -lcurl \
+	 $(if $(echo "int main() { return 0; }" | $(CXX) -xc++ - -lstdc++exp -o has_stdc++exp && rm has_stdc++exp), -lstdc++exp, ) \
 
 .out/%.o: %.cpp
 	mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
