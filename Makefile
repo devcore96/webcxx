@@ -1,4 +1,4 @@
-CXXFLAGS=-Wall -std=c++23 -O3 -ffast-math -I.
+CXXFLAGS=-std=c++23 -O3 -ffast-math -I.
 
 OBJECTS=.out/app/kernel/Main.o \
 		.out/app/services/Env.o \
@@ -11,14 +11,18 @@ LIBS=-lcgicc \
 	 -lcurl \
 
 .out/%.o: %.cpp
-	mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
+	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling $<...
+	@mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
 
 .out/%.o: %.cc
-	mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
+	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling $<...
+	@mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(SYSTEM_HEADERS) $(OBJECTS)
-	if `echo "#include <stacktrace>\n#include <iostream>\nint main() { std::cout << std::stacktrace::current() << std::endl; return 0; }" | $(CXX) -xc++ - -o has_stdc++exp -std=c++23 -lstdc++exp &> /dev/null && rm has_stdc++exp`; \
+	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling index.cgi...
+	@if `echo "#include <stacktrace>\n#include <iostream>\nint main() { std::cout << std::stacktrace::current() << std::endl; return 0; }" | $(CXX) -xc++ - -o has_stdc++exp -std=c++23 -lstdc++exp &> /dev/null`; \
 	then \
+		rm has_stdc++exp; \
 		$(CXX) $(CXXFLAGS) -o index.cgi $(OBJECTS) $(LIBS) -lstdc++exp; \
 	else \
 		$(CXX) $(CXXFLAGS) -o index.cgi $(OBJECTS) $(LIBS); \
