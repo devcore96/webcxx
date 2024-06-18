@@ -11,6 +11,7 @@ The purpose of this project is to provide a highly performant and optimized back
 - [x] Route verbs
 - [ ] XML parsing
 - [ ] Database drivers
+- [ ] Test framework
 
 ## Tests status
 ![Build status](https://github.com/devcore96/webcxx/actions/workflows/c-cpp.yml/badge.svg)
