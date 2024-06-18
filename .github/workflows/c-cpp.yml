@@ -3,6 +3,13 @@ name: Build on ubuntu-latest
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - ./**/*.cpp
+      - ./**/*.c
+      - ./**/*.hpp
+      - ./**/*.h
+      - ./**/*.cpphtml
+      - ./**/Makefile
   pull_request:
     branches: [ "main" ]
 
