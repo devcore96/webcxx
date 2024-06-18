@@ -8,7 +8,7 @@ The purpose of this project is to provide a highly performant and optimized back
 - [x] Connect to external REST APIs
 - [x] Routing, including routes with arguments
 - [ ] User-friendly front-end language (similar to Blazor)
-- [ ] Route verbs
+- [x] Route verbs
 - [ ] XML parsing
 - [ ] Database drivers
 

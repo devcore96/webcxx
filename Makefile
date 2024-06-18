@@ -20,7 +20,7 @@ LIBS=-lcgicc \
 
 all: $(SYSTEM_HEADERS) $(OBJECTS)
 	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling index.cgi...
-	@if `echo "#include <stacktrace>\n#include <iostream>\nint main() { std::cout << std::stacktrace::current() << std::endl; return 0; }" | $(CXX) -xc++ - -o has_stdc++exp -std=c++23 -lstdc++exp &> /dev/null`; \
+	@if (echo "#include <stacktrace>\n#include <iostream>\nint main() { std::cout << std::stacktrace::current() << std::endl; return 0; }" | $(CXX) -xc++ - -o has_stdc++exp -std=c++23 -lstdc++exp) >> /dev/null 2> /dev/null; \
 	then \
 		rm has_stdc++exp; \
 		$(CXX) $(CXXFLAGS) -o index.cgi $(OBJECTS) $(LIBS) -lstdc++exp; \

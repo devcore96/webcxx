@@ -1,4 +1,5 @@
 #include <exception>
+#include <algorithm>
 
 #ifdef __cpp_lib_stacktrace
 # include <stacktrace>
@@ -10,6 +11,7 @@
 #include "Router.hpp"
 
 struct route_data {
+    route_verb verb;
     std::string uri;
     std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback;
 };
@@ -23,9 +25,24 @@ std::vector<route_data> routes;
 std::map<std::string, std::function<std::any(std::string)>> value_mappers;
 std::map<unsigned int, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)>> error_routes;
 
-void route(std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) {
-    routes.push_back({ uri, callback });
+route_verb parse_verb(std::string request_method) {
+    std::transform(request_method.begin(),
+                   request_method.end(),
+                   request_method.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+
+    if (request_method ==    "get") return route_verb::verb_get;
+    if (request_method ==   "post") return route_verb::verb_post;
+    if (request_method ==    "put") return route_verb::verb_put;
+    if (request_method == "delete") return route_verb::verb_delete;
+
+    return route_verb::verb_unknown;
 }
+
+void route_get   (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_get,    uri, callback }); }
+void route_post  (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_post,   uri, callback }); }
+void route_put   (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_put,    uri, callback }); }
+void route_delete(std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_delete, uri, callback }); }
 
 std::vector<std::string> split_string(std::string str, char delim) {
     std::vector<std::string> ret;
@@ -115,8 +132,10 @@ void router() {
     try {
         std::map<std::string, std::any> params;
 
+        route_verb verb = parse_verb(env->request_method);
+
         for(auto& route : routes) {
-            if(route.uri == env->url || complete_route(route.uri, env->url, params)) {
+            if(route.verb == verb && (route.uri == env->url || complete_route(route.uri, env->url, params))) {
                 std::cout << route.callback(params)->render() << std::flush;
 
                 return;

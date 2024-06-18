@@ -12,9 +12,20 @@
 
 #include "Response.hpp"
 
+enum route_verb {
+    verb_get,
+    verb_post,
+    verb_put,
+    verb_delete,
+    verb_unknown = -1
+};
+
 extern std::map<std::string, std::function<std::any(std::string)>> value_mappers;
 
-extern void route(std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback);
+extern void route_get   (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback);
+extern void route_post  (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback);
+extern void route_put   (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback);
+extern void route_delete(std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback);
 extern void router();
 extern void init_router();
 extern void init_routes();

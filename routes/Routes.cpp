@@ -14,7 +14,7 @@
 #endif
 
 void init_routes() {
-    route("/", 
+    route_get("/", 
         #include <pages/index.cpphtml>
     );
 }
