@@ -251,6 +251,8 @@ namespace json {
 
             return "";
         }
+
+        type_t get_type() { return type; }
     };
 
     std::ostream& operator<<(std::ostream& lhs, json& rhs);
@@ -324,23 +326,23 @@ namespace json {
                 [](std::string str, json_token& token) {                                                       return std::nullopt; } },
 
             // json tokens
-            { std::regex("^\\{"),
+            { std::string("{"),
                 [](std::string str, json_token& token) {                                                       return object_begin; } },
-            { std::regex("^\\}"),
+            { std::string("}"),
                 [](std::string str, json_token& token) {                                                       return object_end;   } },
-            { std::regex("^\\["),
+            { std::string("["),
                 [](std::string str, json_token& token) {                                                       return array_begin;  } },
-            { std::regex("^\\]"),
+            { std::string("]"),
                 [](std::string str, json_token& token) {                                                       return array_end;    } },
-            { std::regex("^,"),
+            { std::string(","),
                 [](std::string str, json_token& token) {                                                       return comma;        } },
-            { std::regex("^:"),
+            { std::string(":"),
                 [](std::string str, json_token& token) {                                                       return colon;        } },
-            { std::regex("^true"),
+            { std::string("true"),
                 [](std::string str, json_token& token) { token = json_value { true };                          return value_true;   } },
-            { std::regex("^false"),
+            { std::string("false"),
                 [](std::string str, json_token& token) { token = json_value { false };                         return value_false;  } },
-            { std::regex("^null"),
+            { std::string("null"),
                 [](std::string str, json_token& token) { token = json_value { nullptr };                       return value_null;   } },
             { std::regex("^\".*?\""),
                 [](std::string str, json_token& token) { token = json_value { str.substr(1, str.size() - 2) }; return value_string; } },

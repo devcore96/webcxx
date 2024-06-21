@@ -17,10 +17,30 @@ namespace ast {
     template<
         class TokenT,
         class CharT
-    > struct basic_token {
+    > class basic_token {
+    public:
         // regex must begin with ^
-        std::basic_regex<CharT> regex;
+        std::variant<std::basic_regex<CharT>, std::basic_string<CharT>> regex;
+        bool is_regex;
         std::function<std::optional<int>(std::basic_string<CharT> arg, TokenT& token)> callback;
+
+        basic_token(std::basic_regex<CharT> regex,
+                    std::function<std::optional<int>(std::basic_string<CharT> arg, TokenT& token)> callback) :
+            regex(regex),
+            is_regex(true),
+            callback(callback) { }
+
+        basic_token(std::basic_string<CharT> regex,
+                    std::function<std::optional<int>(std::basic_string<CharT> arg, TokenT& token)> callback) :
+            regex(regex),
+            is_regex(false),
+            callback(callback) { }
+
+        basic_token(const basic_token& ) = default;
+        basic_token(      basic_token&&) = default;
+
+        basic_token& operator=(const basic_token& ) = default;
+        basic_token& operator=(      basic_token&&) = default;
     };
 
     template<class TokenT>
@@ -59,26 +79,49 @@ namespace ast {
             // base token
             if (!optional_token_rule.has_value()) {
                 for (auto& cur_token : tokens) {
-                    std::match_results<typename std::basic_string<CharT>::const_iterator> matches;
-                    bool has_match = std::regex_search(string, matches, cur_token.regex);
+                    if (cur_token.is_regex) {
+                        std::match_results<typename std::basic_string<CharT>::const_iterator> matches;
+                        bool has_match = std::regex_search(string, matches, std::get<std::basic_regex<CharT>>(cur_token.regex));
 
-                    if (has_match) {
-                        std::basic_string<CharT> string_value = matches[0].str();
-                        string = string.substr(string_value.size());
+                        if (has_match) {
+                            std::basic_string<CharT> string_value = matches[0].str();
+                            string = string.substr(string_value.size());
 
-                        TokenT matched_token { };
-                        std::optional<int> match_result = cur_token.callback(string_value, matched_token);
+                            TokenT matched_token { };
+                            std::optional<int> match_result = cur_token.callback(string_value, matched_token);
 
-                        if (match_result.has_value()) {
-                            if (match_result == token) {
-                                return matched_token;
-                            }
-                            
+                            if (match_result.has_value()) {
+                                if (match_result == token) {
+                                    return matched_token;
+                                }
+
 #ifdef __cpp_lib_format
-                            return std::format("syntax error: unexpected token \"{}\".", string_value);
+                                return std::format("syntax error: unexpected token \"{}\".", string_value);
 #else
-                            return "syntax error: unexpected token \"" + string_value + "\".";
+                                return "syntax error: unexpected token \"" + string_value + "\".";
 #endif
+                            }
+                        }
+                    } else {
+                        std::basic_string<CharT> cur_rule = std::get<std::basic_string<CharT>>(cur_token.regex);
+                        if (string.substr(0, cur_rule.size()) == cur_rule) {
+                            string = string.substr(cur_rule.size());
+
+                            TokenT matched_token { };
+
+                            std::optional<int> match_result = cur_token.callback(cur_rule, matched_token);
+
+                            if (match_result.has_value()) {
+                                if (match_result == token) {
+                                    return matched_token;
+                                }
+
+#ifdef __cpp_lib_format
+                                return std::format("syntax error: unexpected token \"{}\".", cur_rule);
+#else
+                                return "syntax error: unexpected token \"" + cur_rule + "\".";
+#endif
+                            }
                         }
                     }
                 }
