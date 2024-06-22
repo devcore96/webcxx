@@ -15,7 +15,7 @@ BASE_LIBS=-lcgicc \
 	      -lpng \
 	      -lcurl \
 
-MYSQL_LIBS=-l:libmysqlcppconn.so.9 \
+MYSQL_LIBS=-lmysqlcppconn \
 
 ifndef DISABLE_MYSQL
 OBJECTS=$(BASE_OBJECTS) $(MYSQL_OBJECTS)
