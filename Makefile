@@ -1,14 +1,29 @@
 CXXFLAGS=-std=c++23 -O3 -ffast-math -I.
 
-OBJECTS=.out/app/kernel/Main.o \
-		.out/app/services/Env.o \
-		.out/app/services/Json.o \
-		.out/app/services/Router.o \
-		.out/routes/Routes.o \
+BASE_OBJECTS=.out/app/kernel/Main.o \
+		     .out/app/services/env/Env.o \
+			 .out/app/services/rest/Rest.o \
+		     .out/app/services/serialization/Json.o \
+		     .out/app/services/router/Router.o \
+		     .out/app/services/router/RouteTypes.o \
+		     .out/routes/Web.o \
+		     .out/routes/Api.o \
 
-LIBS=-lcgicc \
-	 -lpng \
-	 -lcurl \
+MYSQL_OBJECTS=
+
+BASE_LIBS=-lcgicc \
+	      -lpng \
+	      -lcurl \
+
+MYSQL_LIBS=-lmysqlcppconn \
+
+ifndef DISABLE_MYSQL
+OBJECTS=$(BASE_OBJECTS) $(MYSQL_OBJECTS)
+LIBS=$(BASE_LIBS) $(MYSQL_LIBS)
+else
+OBJECTS=$(BASE_OBJECTS)
+LIBS=$(BASE_LIBS)
+endif
 
 .out/%.o: %.cpp
 	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling $<...

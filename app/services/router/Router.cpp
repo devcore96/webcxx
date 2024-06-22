@@ -7,14 +7,9 @@
 
 #include <signal.h>
 
-#include "Env.hpp"
+#include "../env/Env.hpp"
+#include "../tools/Container.hpp"
 #include "Router.hpp"
-
-struct route_data {
-    route_verb verb;
-    std::string uri;
-    std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback;
-};
 
 struct url_info {
     std::vector<std::string> path;
@@ -31,18 +26,15 @@ route_verb parse_verb(std::string request_method) {
                    request_method.begin(),
                    [](unsigned char c){ return std::tolower(c); });
 
-    if (request_method ==    "get") return route_verb::verb_get;
-    if (request_method ==   "post") return route_verb::verb_post;
-    if (request_method ==    "put") return route_verb::verb_put;
-    if (request_method == "delete") return route_verb::verb_delete;
+    if (request_method ==     "get") return route_verb::verb_get;
+    if (request_method ==    "post") return route_verb::verb_post;
+    if (request_method ==     "put") return route_verb::verb_put;
+    if (request_method ==   "patch") return route_verb::verb_patch;
+    if (request_method ==  "delete") return route_verb::verb_delete;
+    if (request_method == "options") return route_verb::verb_options;
 
     return route_verb::verb_unknown;
 }
-
-void route_get   (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_get,    uri, callback }); }
-void route_post  (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_post,   uri, callback }); }
-void route_put   (std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_put,    uri, callback }); }
-void route_delete(std::string uri, std::function<std::unique_ptr<response>(std::map<std::string, std::any>)> callback) { routes.push_back({ route_verb::verb_delete, uri, callback }); }
 
 std::vector<std::string> split_string(std::string str, char delim) {
     std::vector<std::string> ret;
@@ -128,14 +120,31 @@ bool complete_route(std::string route, std::string url, std::map<std::string, st
     return true;
 }
 
+std::string clean_url(std::string url) {
+    while (*(url.end() - 1) == '/') url.pop_back();
+
+    for (size_t i = 0; i < url.size(); i++) {
+        if (url[i] == '/' && url[i + 1] == '/') {
+            url.erase(url.begin() + i);
+            i--;
+        }
+    }
+
+    return url;
+}
+
 void router() {
     try {
         std::map<std::string, std::any> params;
 
         route_verb verb = parse_verb(env->request_method);
 
+        std::string url = clean_url(env->url);
+
         for(auto& route : routes) {
-            if(route.verb == verb && (route.uri == env->url || complete_route(route.uri, env->url, params))) {
+            std::string route_url = clean_url(route.uri);
+
+            if(contains(route.verb, verb) && (route_url == url || complete_route(route_url, url, params))) {
                 std::cout << route.callback(params)->render() << std::flush;
 
                 return;

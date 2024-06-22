@@ -115,3 +115,10 @@ inline std::unique_ptr<data_response> reply(std::string content_type, rest::resp
 
     return res;
 }
+
+inline std::unique_ptr<data_response> reply(rest::json json, int response_code = 200) {
+    return reply("application/json", {
+        .status_code = response_code,
+        .data = json.beautify()
+    });
+}

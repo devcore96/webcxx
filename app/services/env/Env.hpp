@@ -6,7 +6,7 @@
 #include <cgicc/Cgicc.h>
 #include <cgicc/CgiEnvironment.h>
 
-#include "Rest.hpp"
+#include "../rest/Rest.hpp"
 
 class env_data {
 private:

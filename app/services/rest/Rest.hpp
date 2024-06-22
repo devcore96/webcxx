@@ -1,7 +1,6 @@
 #pragma once
 
 #include <curl/curl.h>
-#include "Json.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -9,6 +8,8 @@
 #include <ostream>
 #include <concepts>
 #include <variant>
+
+#include "../serialization/Json.hpp"
 
 namespace rest {
     using json = ::json::json_value;
