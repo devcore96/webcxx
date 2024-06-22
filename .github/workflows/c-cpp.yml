@@ -1,4 +1,4 @@
-name: Build on ubuntu-latest
+name: Build without DB
 
 on:
   push:
@@ -15,5 +15,5 @@ jobs:
     - uses: actions/checkout@v4
     - name: install dependencies
       run: sudo apt install -y libcgicc-dev libcurl4-openssl-dev
-    - name: make
+    - name: DISABLE_MYSQL=true make
       run: make
