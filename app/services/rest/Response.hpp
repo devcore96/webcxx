@@ -82,7 +82,7 @@ inline std::unique_ptr<html_response> view(std::string html, unsigned int respon
     return res;
 }
 
-[[deprecaated("Use reply(rest::response) instead")]]
+[[deprecated("Use reply(rest::response) instead")]]
 inline std::unique_ptr<data_response> reply(std::string data, std::string content_type, unsigned int response_code = 200) {
     std::unique_ptr<data_response> res { new data_response };
 

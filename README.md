@@ -14,4 +14,5 @@ The purpose of this project is to provide a highly performant and optimized back
 - [ ] Test framework
 
 ## Tests status
-![Build status](https://github.com/devcore96/webcxx/actions/workflows/c-cpp.yml/badge.svg)
+![Build status with MySQL](https://github.com/devcore96/webcxx/actions/workflows/build-mysql.yml/badge.svg)
+![Build status without DB](https://github.com/devcore96/webcxx/actions/workflows/build-no-db.yml/badge.svg)
