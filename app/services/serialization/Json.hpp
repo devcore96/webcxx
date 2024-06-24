@@ -6,6 +6,9 @@
 #include <map>
 #include <variant>
 #include <concepts>
+#include <sstream>
+
+#include "Model.hpp"
 
 namespace json {
     class json_value;
@@ -97,11 +100,11 @@ namespace json {
         bool operator==(const char*               val) { return type == basic    && std::get<std::string>(value) ==  val; }
         bool operator==(      char*               val) { return type == basic    && std::get<std::string>(value) ==  val; }
         bool operator==(bool                      val) { return type == basic    && std::get<std::string>(value) == (val ? "true" : "false"); }
-        bool operator==(std::integral       auto  val) { return type == basic    && std::get<std::string>(value) == std::to_string(val); }
-        bool operator==(std::floating_point auto  val) { return type == basic    && std::get<std::string>(value) == std::to_string(val); }
         bool operator==(json                      val) { return type == object   &&        ((std::string) *this) == ((std::string)val); }
         bool operator==(std::vector<json_value>   val) { return type == array    &&        ((std::string) *this) == ((std::string)json_value { val }); }
         bool operator==(json_value                val) { return type == val.type &&        ((std::string) *this) == ((std::string)val); }
+        bool operator==(std::integral       auto  val) { if    (type != basic) return false; std::istringstream ss(std::get<std::string>(value)); auto _value = (decltype(val))0; ss >> _value; return _value == val; }
+        bool operator==(std::floating_point auto  val) { if    (type != basic) return false; std::istringstream ss(std::get<std::string>(value)); auto _value = (decltype(val))0; ss >> _value; return _value == val; }
 
         bool isset() { return type != unset; }
 
@@ -431,5 +434,14 @@ namespace json {
         json_value parse(std::string string, bool silent = false) {
             return std::visit(json_token_visitor { }, do_parse(std::regex_replace(std::regex_replace(string, std::regex("[\n\r]"), " "), std::regex("\\\\\\\""), "''"), silent));
         }
+    };
+
+    class serializer : public base_serializer {
+    private:
+        parser p;
+
+    public:
+        json   serialize(base_model& model);
+        void deserialize(base_model& model, json object);
     };
 }

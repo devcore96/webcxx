@@ -1,4 +1,6 @@
 #include "Json.hpp"
+
+#include <sstream>
 #include <stdexcept>
 
 namespace json {
@@ -65,4 +67,47 @@ namespace json {
 
     json& json::operator=(const json_value&  value) { return *this = value.operator json(); }
     json& json::operator=(      json_value&& value) { return *this = value.operator json(); }
+
+    json serializer::serialize(base_model& model) {
+        auto& properties = get_properties(model);
+
+        json object;
+
+        for(auto& key_value_pair : properties) {
+            auto value = get_value(key_value_pair.second);
+
+            switch(value.type) {
+                case serialized::integer:        object[key_value_pair.first] = std::get<long long     >(value.value); break;
+                case serialized::floating_point: object[key_value_pair.first] = std::get<long double   >(value.value); break;
+                case serialized::boolean:        object[key_value_pair.first] = std::get<bool          >(value.value); break;
+                case serialized::null:           object[key_value_pair.first] = std::get<std::nullptr_t>(value.value); break;
+                case serialized::string:         object[key_value_pair.first] = std::get<std::string   >(value.value); break;
+            }
+        }
+
+        return object;
+    }
+
+    void serializer::deserialize(base_model& model, json object) {
+        auto& properties = get_properties(model);
+
+        for(auto& key_value_pair : properties) {
+            auto value = get_value(key_value_pair.second);
+
+            auto& json_val = object[key_value_pair.first];
+
+            if (json_val.get_type() != json_value::basic) throw std::bad_cast();
+
+            switch(value.type) {
+                case serialized::integer:        { std::istringstream stream (json_val.unescaped()); long long   val = 0; stream >> val; value.value = val;                  break; }
+                case serialized::floating_point: { std::istringstream stream (json_val.unescaped()); long double val = 0; stream >> val; value.value = val;                  break; }
+                case serialized::boolean:                                                                                                value.value = json_val == true;     break;
+                case serialized::null:                                                                                                   value.value = nullptr;              break;
+                case serialized::string:                                                                                                 value.value = json_val.unescaped(); break;
+            }
+
+            set_value(key_value_pair.second, value);
+        }
+    }
+
 }
