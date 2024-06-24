@@ -4,8 +4,6 @@
 #include <variant>
 #include <concepts>
 
-#include "../tools/Specializes.hpp"
-
 template<class T>
 concept natively_serializable = std::integral<T> ||
                                 std::floating_point<T> ||
