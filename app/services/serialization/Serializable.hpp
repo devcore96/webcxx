@@ -13,8 +13,9 @@ concept natively_serializable = std::integral<T> ||
                                 std::same_as<std::nullptr_t, T>;
 
 template<class T>
-concept to_string_serializable = std::convertible_to<std::string, T> ||
-                                 std::constructible_from<std::string, T>;
+concept to_string_serializable = !natively_serializable<T> &&
+                                 (std::convertible_to<std::string, T> ||
+                                  std::constructible_from<std::string, T>);
 
 template<class T>
 concept serializable = natively_serializable<T> || to_string_serializable<T>;
