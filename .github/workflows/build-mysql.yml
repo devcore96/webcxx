@@ -16,6 +16,6 @@ jobs:
     - name: install dependencies
       run: sudo apt install -y libcgicc-dev libcurl4-openssl-dev mysql-server
     - name: install mysql
-      run: wget https://dev.mysql.com/get/Downloads/Connector-C++/libmysqlcppconn9_8.4.0-1ubuntu22.04_amd64.deb && sudo dpkg -i libmysqlcppconn9_8.4.0-1ubuntu22.04_amd64.deb && sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so.9 /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so
+      run: wget https://dev.mysql.com/get/Downloads/Connector-C++/libmysqlcppconn-dev_8.4.0-1ubuntu22.04_amd64.deb && sudo dpkg -i libmysqlcppconn9_8.4.0-1ubuntu22.04_amd64.deb && sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so.9 /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so
     - name: make
       run: make
