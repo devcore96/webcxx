@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++23 -O3 -ffast-math -I. -w
+CXXFLAGS=-std=c++23 -O3 -ffast-math -I. -w -DMYSQLPP_MYSQL_HEADERS_BURIED
 
 MAIN=.out/app/kernel/Main.o \
 
@@ -8,10 +8,12 @@ BASE_OBJECTS=.out/app/services/env/Env.o \
 		     .out/app/services/serialization/Json.o \
 		     .out/app/services/router/Router.o \
 		     .out/app/services/router/RouteTypes.o \
+			 .out/app/services/database/Table.o \
 		     .out/routes/Web.o \
 		     .out/routes/Api.o \
 
-MYSQL_OBJECTS=
+MYSQL_OBJECTS=.out/app/services/mysql/Connection.o \
+              .out/app/services/mysql/Model.o \
 
 BASE_TESTS=.out/app/tests/serialization/serialize-json.test \
            .out/app/tests/serialization/deserialize-json.test \
@@ -24,7 +26,7 @@ BASE_LIBS=-lcgicc \
 	      -lpng \
 	      -lcurl \
 
-MYSQL_LIBS=-lmysqlcppconn \
+MYSQL_LIBS=-lmysqlcppconn -lmysqlcppconn8 \
 
 ifndef DISABLE_MYSQL
 OBJECTS=$(MAIN) $(BASE_OBJECTS) $(MYSQL_OBJECTS)
@@ -39,7 +41,7 @@ LIBS=$(BASE_LIBS)
 endif
 
 .out/%.o: %.cpp
-	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling $<...
+	@echo "\e[1A\e[K[`echo $(OBJECTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling $<..."
 	@if mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -c -o $@ $<; \
 	then \
 		echo "\e[1A\e[K[`echo $(OBJECTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] \e[32mok\e[39m $<"; \
@@ -49,7 +51,7 @@ endif
 	fi
 
 .out/%.test: %.cpp
-	@echo [`echo $(TESTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(TESTS) | awk 'NR>0' RS=' ' | wc -l | xargs expr -1 + `] compiling test $<...
+	@echo "\e[1A\e[K[`echo $(TESTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(TESTS) | awk 'NR>0' RS=' ' | wc -l | xargs expr -1 + `] compiling test $<..."
 	@mkdir -p `dirname $@` && $(CXX) $(CXXFLAGS) -o $@ $(TEST_OBJECTS) $< $(LIBS)
 	@echo "\e[1A\e[K[`echo $(TESTS) | awk 'NR>0' RS=' ' | grep -n $@ | awk 'NR==1' RS=':'`/`echo $(TESTS) | awk 'NR>0' RS=' ' | wc -l | xargs expr -1 + `] running test $<..."
 	@if $@; \
@@ -62,7 +64,7 @@ endif
 	fi
 
 all: $(SYSTEM_HEADERS) $(OBJECTS)
-	@echo [`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling index.cgi...
+	@echo "\e[1A\e[K[`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling index.cgi..."
 	@if (echo "#include <stacktrace>\n#include <iostream>\nint main() { std::cout << std::stacktrace::current() << std::endl; return 0; }" | $(CXX) -xc++ - -o has_stdc++exp -std=c++23 -lstdc++exp) >> /dev/null 2> /dev/null; \
 	then \
 		rm has_stdc++exp; \

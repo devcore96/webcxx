@@ -35,11 +35,11 @@ private:
     T value;
 
 protected:
-    serialized serialize_value_b() noexcept(true) requires(std::same_as<bool,           T>) { return serialized { serialized::boolean,            value  }; }
-    serialized serialize_value_f() noexcept(true) requires(std::floating_point         <T>) { return serialized { serialized::floating_point,     value  }; }
-    serialized serialize_value_i() noexcept(true) requires(std::integral               <T>) { return serialized { serialized::integer,            value  }; }
-    serialized serialize_value_n() noexcept(true) requires(std::same_as<std::nullptr_t, T>) { return serialized { serialized::null,               value  }; }
-    serialized serialize_value_s() noexcept(true) requires(to_string_serializable      <T>) { return serialized { serialized::string, std::string(value) }; }
+    serialized serialize_value_b() noexcept(true) requires(std::same_as<bool,           T>) { return serialized { serialized::boolean,                      value  }; }
+    serialized serialize_value_f() noexcept(true) requires(std::floating_point         <T>) { return serialized { serialized::floating_point, (long double) value  }; }
+    serialized serialize_value_i() noexcept(true) requires(std::integral               <T>) { return serialized { serialized::integer,        (long   long) value  }; }
+    serialized serialize_value_n() noexcept(true) requires(std::same_as<std::nullptr_t, T>) { return serialized { serialized::null,                         value  }; }
+    serialized serialize_value_s() noexcept(true) requires(to_string_serializable      <T>) { return serialized { serialized::string,           std::string(value) }; }
 
     serialized serialize_value() {
         if constexpr(std::same_as<bool,           T>) return serialize_value_b();
@@ -75,6 +75,8 @@ public:
 
     property& operator=(const property<T>&  value) requires (std::copy_constructible<T>) = default;
     property& operator=(      property<T>&& value) requires (std::move_constructible<T>) = default;
+    property& operator=(const          T &  val  ) requires (std::copy_constructible<T>) { value = val; return *this; }
+    property& operator=(               T && val  ) requires (std::move_constructible<T>) { value = val; return *this; }
 
     operator T&() { return value; }
 

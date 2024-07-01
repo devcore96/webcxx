@@ -32,5 +32,6 @@ struct serialized {
         null,
         string
     } type;
+    
     serialized_t value;
 };

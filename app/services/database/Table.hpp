@@ -2,6 +2,11 @@
 
 #include "Model.hpp"
 
+#include <memory>
+#include <vector>
+#include <string>
+#include <sstream>
+
 namespace db {
     class base_table {
     protected:
@@ -17,19 +22,19 @@ namespace db {
         std::string query_operator;
     };
 
-    template<std::derived_from<model> Model>
     class table;
 
-    template<std::derived_from<model> Model>
     class where_query {
     private:
+        friend class table;
+
+        table& t;
         std::vector<where_query_t> wheres;
 
-        friend class table<Model>;
-
     public:
+        where_query(table& t) : t(t) { }
         template<typename T>
-        where_query<Model>& where(std::string key, T value, std::string query_operator) {
+        where_query& where(std::string key, T value, std::string query_operator) {
             std::ostringstream stream;
             stream << value;
 
@@ -42,17 +47,28 @@ namespace db {
             return *this;
         }
 
-        virtual std::vector<Model> get() = 0;
+        std::vector<std::shared_ptr<model>> get();
     };
 
-    template<std::derived_from<model> Model>
     class table : public base_table {
+    protected:
+        friend class where_query;
+
+        std::string name;
+
+        virtual std::vector<std::shared_ptr<model>> get(std::vector<where_query_t> wheres) const = 0;
+
     public:
-        virtual std::vector<Model> all() = 0;
+        template<std::derived_from<model> Model>
+        table() : name((Model { }).table_name()) { }
+
+        virtual std::vector<std::shared_ptr<model>> all() const = 0;
+        virtual void create() const = 0;
+        virtual void destroy() const = 0;
 
         template<typename T>
-        where_query<Model> where(std::string key, T value, std::string operator) {
-            where_query<Model> where;
+        where_query where(std::string key, T value, std::string query_operator) const {
+            where_query where { *this };
 
             std::ostringstream stream;
             stream << value;

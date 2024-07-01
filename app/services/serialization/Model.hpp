@@ -8,9 +8,9 @@ class base_model;
 
 class base_serializer {
 protected:
-    std::map<std::string, base_property*>& get_properties(base_model& model);
-    serialized get_value(base_property* property);
-    void set_value(base_property* property, serialized value);
+    std::map<std::string, base_property*>& get_properties(base_model& model) const;
+    serialized get_value(base_property* property) const;
+    void set_value(base_property* property, serialized value) const;
 };
 
 class base_model {
