@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(__cpp_lib_format) && __cpp_lib_format <= __cplusplus
 # include <format>
 using std::format;

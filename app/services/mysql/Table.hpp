@@ -9,14 +9,13 @@
 namespace mysql {
     class model;
     
-    template<std::derived_from<model> Model>
-        requires std::default_initializable<Model>
+    template<class Model>
     class table : public db::table,
                          base_serializer {
     protected:
         friend class model;
 
-        virtual std::vector<std::shared_ptr<db::model>> get(std::vector<db::where_query_t> wheres) const {
+        std::vector<std::shared_ptr<db::model>> get(std::vector<db::where_query_t> wheres) const {
             auto& session = connection::get_instance().session;
             auto& db      = connection::get_instance().db;
             auto  table   = db.getTable(name);
@@ -25,7 +24,7 @@ namespace mysql {
                 throw std::runtime_error(std::format("Cannot select models: table \"{}\" does not exist in the database.", name));
             }
 
-            std::vector<db::model> models;
+            std::vector<std::shared_ptr<db::model>> models;
 
             auto select = table.select();
 
@@ -48,13 +47,13 @@ namespace mysql {
                     auto& value = row.get(i);
 
                     switch (value.getType()) {
-                        case mysqlx::abi2::r0::Value::Type::VNULL:  properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::null,           .value =            nullptr; }); break;
-                        case mysqlx::abi2::r0::Value::Type::UINT64: properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::integer,        .value = (     size_t)value; }); break;
-                        case mysqlx::abi2::r0::Value::Type::INT64:  properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::integer,        .value = (  ptrdiff_t)value; }); break;
-                        case mysqlx::abi2::r0::Value::Type::FLOAT:  properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::floating_point, .value = (      float)value; }); break;
-                        case mysqlx::abi2::r0::Value::Type::DOUBLE: properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::floating_point, .value = (     double)value; }); break;
-                        case mysqlx::abi2::r0::Value::Type::BOOL:   properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::boolean,        .value = (       bool)value; }); break;
-                        case mysqlx::abi2::r0::Value::Type::STRING: properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::string,         .value = (std::string)value; }); break;
+                        case mysqlx::abi2::r0::Value::Type::VNULL:  set_value(properties[column.getColumnName()], serialized { .type = serialized::null,           .value =                       nullptr }); break;
+                        case mysqlx::abi2::r0::Value::Type::UINT64: set_value(properties[column.getColumnName()], serialized { .type = serialized::integer,        .value = (ptrdiff_t)(     size_t)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::INT64:  set_value(properties[column.getColumnName()], serialized { .type = serialized::integer,        .value =            (  ptrdiff_t)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::FLOAT:  set_value(properties[column.getColumnName()], serialized { .type = serialized::floating_point, .value =            (      float)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::DOUBLE: set_value(properties[column.getColumnName()], serialized { .type = serialized::floating_point, .value =            (     double)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::BOOL:   set_value(properties[column.getColumnName()], serialized { .type = serialized::boolean,        .value =            (       bool)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::STRING: set_value(properties[column.getColumnName()], serialized { .type = serialized::string,         .value =            (std::string)value }); break;
                     }
                 }
 
@@ -65,7 +64,14 @@ namespace mysql {
         }
 
     public:
-        virtual std::vector<std::shared_ptr<db::model>> all() const {
+        table() : db::table(Model { }) { };
+        table(const table& ) = default;
+        table(      table&&) = default;
+
+        table& operator=(const table& ) = default;
+        table& operator=(      table&&) = default;
+
+        std::vector<std::shared_ptr<db::model>> all() const {
             return get({});
         }
 

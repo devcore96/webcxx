@@ -23,6 +23,7 @@ Supported features:
 - [ ] Create/update/delete table
 - [ ] Create/delete database
 - [ ] Seed database
+- [ ] Relationships
 
 ## Tests status
 ![Build status with MySQL](https://github.com/devcore96/webcxx/actions/workflows/build-mysql.yml/badge.svg)

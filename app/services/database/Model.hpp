@@ -9,8 +9,6 @@ namespace db {
 
     class model : public base_model {
     protected:
-        virtual std::string table_name() const = 0;
-
         friend class table;
 
         bool created = false;
@@ -22,6 +20,8 @@ namespace db {
 
         virtual void save() = 0;
         virtual void remove() = 0;
+
+        virtual std::string table_name() const = 0;
     };
 }
 

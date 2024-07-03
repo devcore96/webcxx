@@ -13,7 +13,7 @@ namespace db {
         std::string name;
 
     public:
-        virtual void create() = 0;
+        virtual void create() const = 0;
     };
 
     struct where_query_t {
@@ -60,7 +60,13 @@ namespace db {
 
     public:
         template<std::derived_from<model> Model>
-        table() : name((Model { }).table_name()) { }
+        table(Model m) : name(m.table_name()) { }
+        
+        table(const table& ) = default;
+        table(      table&&) = default;
+
+        table& operator=(const table& ) = default;
+        table& operator=(      table&&) = default;
 
         virtual std::vector<std::shared_ptr<model>> all() const = 0;
         virtual void create() const = 0;
