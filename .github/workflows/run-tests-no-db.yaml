@@ -16,4 +16,4 @@ jobs:
     - name: install dependencies
       run: sudo apt install -y libcgicc-dev libcurl4-openssl-dev
     - name: run tests
-      run: DISABLE_MYSQL=true make test
+      run: DONT_COMPRESS_OUTPUT=1 DISABLE_MYSQL=true make test

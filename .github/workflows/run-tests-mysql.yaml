@@ -18,4 +18,4 @@ jobs:
     - name: install mysql
       run: wget https://dev.mysql.com/get/Downloads/Connector-C++/libmysqlcppconn9_8.4.0-1ubuntu22.04_amd64.deb https://dev.mysql.com/get/Downloads/Connector-C++/libmysqlcppconn-dev_8.4.0-1ubuntu22.04_amd64.deb https://dev.mysql.com/get/Downloads/Connector-C++/libmysqlcppconn8-2_8.4.0-1ubuntu22.04_amd64.deb https://dev.mysql.com/get/Downloads/MySQL-8.4/mysql-community-client-plugins_8.4.0-1ubuntu22.04_amd64.deb && sudo dpkg --install mysql-community-client-plugins_8.4.0-1ubuntu22.04_amd64.deb libmysqlcppconn9_8.4.0-1ubuntu22.04_amd64.deb libmysqlcppconn8-2_8.4.0-1ubuntu22.04_amd64.deb libmysqlcppconn-dev_8.4.0-1ubuntu22.04_amd64.deb
     - name: run tests
-      run: make test
+      run: DONT_COMPRESS_OUTPUT=1 make test

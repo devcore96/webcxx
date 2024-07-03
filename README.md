@@ -13,6 +13,17 @@ The purpose of this project is to provide a highly performant and optimized back
 - [ ] Database drivers
 - [ ] Test framework
 
+## Database status
+Supported databases:
+- [x] MySQL
+
+Supported features:
+- [x] Models with serialization and deserialization
+- [x] Insert/update/delete row
+- [ ] Create/update/delete table
+- [ ] Create/delete database
+- [ ] Seed database
+
 ## Tests status
 ![Build status with MySQL](https://github.com/devcore96/webcxx/actions/workflows/build-mysql.yml/badge.svg)
 ![Tests status with MySQL](https://github.com/devcore96/webcxx/actions/workflows/run-tests-mysql.yaml/badge.svg)
