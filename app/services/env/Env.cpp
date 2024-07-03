@@ -25,6 +25,10 @@ env_data::env_data() {
     https                 = cgicc_env.usingHTTPS();
 
     url                   = cgicc_env.getRedirectURL();
+
+    try {
+        post_data         = (json::parser { }).parse(content_data);
+    } catch (std::exception& e) { }
 }
 
 std::string env_data::get_form_post(const std::string& name) const {
@@ -48,4 +52,8 @@ std::vector<cgicc::FormFile>::iterator env_data::get_file(const std::string& nam
 
 std::vector<cgicc::FormFile>::const_iterator env_data::get_file(const std::string& name) const {
     return cgi.getFile(name);
+}
+
+std::vector<cgicc::FormFile> env_data::get_files() {
+    return cgi.getFiles();
 }

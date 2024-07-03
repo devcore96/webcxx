@@ -25,9 +25,10 @@ public:
     // Retrieves post data from form input or JSON
     rest::json& operator[](const std::string& name);
 
-    // Retrieves posted fiile
+    // Retrieves posted files
     std::vector<cgicc::FormFile>::iterator get_file(const std::string& name);
     std::vector<cgicc::FormFile>::const_iterator get_file(const std::string& name) const;
+    std::vector<cgicc::FormFile> get_files();
 
     std::string request_method;
     std::string query_string;

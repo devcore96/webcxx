@@ -9,11 +9,12 @@ BASE_OBJECTS=.out/app/services/env/Env.o \
 		     .out/app/services/router/Router.o \
 		     .out/app/services/router/RouteTypes.o \
 			 .out/app/services/database/Table.o \
-		     .out/routes/Web.o \
-		     .out/routes/Api.o \
 
 MYSQL_OBJECTS=.out/app/services/mysql/Connection.o \
               .out/app/services/mysql/Model.o \
+
+CUSTOM_OBJECTS=.out/routes/Web.o \
+		       .out/routes/Api.o \
 
 BASE_TESTS=.out/app/tests/serialization/serialize-json.test \
            .out/app/tests/serialization/deserialize-json.test \
@@ -22,6 +23,8 @@ BASE_TESTS=.out/app/tests/serialization/serialize-json.test \
 
 MYSQL_TESTS=
 
+CUSTOM_TESTS=
+
 BASE_LIBS=-lcgicc \
 	      -lpng \
 	      -lcurl \
@@ -29,14 +32,14 @@ BASE_LIBS=-lcgicc \
 MYSQL_LIBS=-lmysqlcppconn -lmysqlcppconn8 \
 
 ifndef DISABLE_MYSQL
-OBJECTS=$(MAIN) $(BASE_OBJECTS) $(MYSQL_OBJECTS)
-TEST_OBJECTS=$(BASE_OBJECTS) $(MYSQL_OBJECTS)
-TESTS=$(BASE_TESTS) $(MYSQL_TESTS)
+OBJECTS=$(MAIN) $(BASE_OBJECTS) $(MYSQL_OBJECTS) $(CUSTOM_OBJECTS)
+TEST_OBJECTS=$(BASE_OBJECTS) $(MYSQL_OBJECTS) $(CUSTOM_OBJECTS)
+TESTS=$(BASE_TESTS) $(MYSQL_TESTS) $(CUSTOM_TESTS)
 LIBS=$(BASE_LIBS) $(MYSQL_LIBS)
 else
-OBJECTS=$(MAIN) $(BASE_OBJECTS)
-TEST_OBJECTS=$(BASE_OBJECTS)
-TESTS=$(BASE_TESTS)
+OBJECTS=$(MAIN) $(BASE_OBJECTS) $(CUSTOM_OBJECTS)
+TEST_OBJECTS=$(BASE_OBJECTS) $(CUSTOM_OBJECTS)
+TESTS=$(BASE_TESTS) $(CUSTOM_TESTS)
 LIBS=$(BASE_LIBS)
 endif
 
@@ -63,7 +66,7 @@ endif
 		exit 1; \
 	fi
 
-all: $(SYSTEM_HEADERS) $(OBJECTS)
+all: _line_ $(SYSTEM_HEADERS) $(OBJECTS)
 	@echo "\e[1A\e[K[`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`/`echo $(OBJECTS) | awk 'NR>0' RS=' ' | wc -l`] compiling index.cgi..."
 	@if (echo "#include <stacktrace>\n#include <iostream>\nint main() { std::cout << std::stacktrace::current() << std::endl; return 0; }" | $(CXX) -xc++ - -o has_stdc++exp -std=c++23 -lstdc++exp) >> /dev/null 2> /dev/null; \
 	then \
@@ -89,3 +92,6 @@ test: $(TEST_OBJECTS) $(TESTS)
 
 clean:
 	rm -rf $(OBJECTS) .out index.cgi
+
+_line_:
+	@echo

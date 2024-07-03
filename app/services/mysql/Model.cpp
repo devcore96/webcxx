@@ -1,7 +1,7 @@
 #include "Model.hpp"
 #include "Connection.hpp"
+#include "../tools/Format.hpp"
 
-#include <format>
 #include <stdexcept>
 
 namespace mysql {
@@ -12,7 +12,7 @@ namespace mysql {
         auto  t       = db.getTable(table_name());
 
         if (!t.existsInDatabase()) {
-            throw std::runtime_error(std::format("Cannot save model: table \"{}\" does not exist in the database.", table_name()));
+            throw std::runtime_error(::format("Cannot save model: table \"{}\" does not exist in the database.", table_name()));
         }
 
         if (created) {
@@ -30,7 +30,7 @@ namespace mysql {
                 }
             }
 
-            update.where(std::format("id = {}", (size_t)properties["id"])).execute();
+            update.where(::format("id = {}", (size_t)properties["id"])).execute();
         } else {
             mysqlx::abi2::Row row;
             
@@ -63,9 +63,9 @@ namespace mysql {
         auto  t       = db.getTable(table_name());
 
         if (!t.existsInDatabase()) {
-            throw std::runtime_error(std::format("Cannot remove model: table \"{}\" does not exist in the database.", table_name()));
+            throw std::runtime_error(::format("Cannot remove model: table \"{}\" does not exist in the database.", table_name()));
         }
 
-        t.remove().where(std::format("id = {}", (size_t)properties["id"])).execute();
+        t.remove().where(::format("id = {}", (size_t)properties["id"])).execute();
     }
 }

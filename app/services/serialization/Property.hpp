@@ -3,7 +3,6 @@
 #include "Serializable.hpp"
 
 #include <stdexcept>
-#include <iostream>
 
 class base_serializer;
 class base_model;
