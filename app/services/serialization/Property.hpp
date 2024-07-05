@@ -16,9 +16,6 @@ protected:
 
     void register_property();
 
-    virtual serialized serialize_value() = 0;
-    virtual void deserialize_value(serialized val) = 0;
-
     base_property(std::string key, base_model* model) : key(key), model(model) { }
 
     base_property(const base_property & ) = default;
@@ -26,6 +23,10 @@ protected:
 
     base_property& operator=(const base_property&  value) = default;
     base_property& operator=(      base_property&& value) = default;
+
+public:
+    virtual serialized serialize_value() = 0;
+    virtual void deserialize_value(serialized val) = 0;
 };
 
 template<serializable T>

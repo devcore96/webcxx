@@ -74,7 +74,7 @@ namespace json {
         json object;
 
         for(auto& key_value_pair : properties) {
-            auto value = get_value(key_value_pair.second);
+            auto value = key_value_pair.second->serialize_value();
 
             switch(value.type) {
                 case serialized::integer:        object[key_value_pair.first] = std::get<long long     >(value.value); break;
@@ -92,7 +92,7 @@ namespace json {
         auto& properties = get_properties(model);
 
         for(auto& key_value_pair : properties) {
-            auto value = get_value(key_value_pair.second);
+            auto value = key_value_pair.second->serialize_value();
 
             auto& json_val = object[key_value_pair.first];
 
@@ -106,7 +106,7 @@ namespace json {
                 case serialized::string:                                                                                                 value.value = json_val.unescaped(); break;
             }
 
-            set_value(key_value_pair.second, value);
+            key_value_pair.second->deserialize_value(value);
         }
     }
 

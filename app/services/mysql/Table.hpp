@@ -5,6 +5,7 @@
 
 #include "Model.hpp"
 #include "Connection.hpp"
+#include <iostream>
 
 namespace mysql {
     class model;
@@ -44,16 +45,16 @@ namespace mysql {
                 size_t i = 0;
 
                 for (auto& column : columns) {
-                    auto& value = row.get(i);
+                    auto& value = row.get(i++);
 
                     switch (value.getType()) {
-                        case mysqlx::abi2::r0::Value::Type::VNULL:  set_value(properties[column.getColumnName()], serialized { .type = serialized::null,           .value =                       nullptr }); break;
-                        case mysqlx::abi2::r0::Value::Type::UINT64: set_value(properties[column.getColumnName()], serialized { .type = serialized::integer,        .value = (ptrdiff_t)(     size_t)value }); break;
-                        case mysqlx::abi2::r0::Value::Type::INT64:  set_value(properties[column.getColumnName()], serialized { .type = serialized::integer,        .value =            (  ptrdiff_t)value }); break;
-                        case mysqlx::abi2::r0::Value::Type::FLOAT:  set_value(properties[column.getColumnName()], serialized { .type = serialized::floating_point, .value =            (      float)value }); break;
-                        case mysqlx::abi2::r0::Value::Type::DOUBLE: set_value(properties[column.getColumnName()], serialized { .type = serialized::floating_point, .value =            (     double)value }); break;
-                        case mysqlx::abi2::r0::Value::Type::BOOL:   set_value(properties[column.getColumnName()], serialized { .type = serialized::boolean,        .value =            (       bool)value }); break;
-                        case mysqlx::abi2::r0::Value::Type::STRING: set_value(properties[column.getColumnName()], serialized { .type = serialized::string,         .value =            (std::string)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::VNULL:  properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::null,           .value =                       nullptr }); break;
+                        case mysqlx::abi2::r0::Value::Type::UINT64: properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::integer,        .value = (ptrdiff_t)(     size_t)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::INT64:  properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::integer,        .value =            (  ptrdiff_t)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::FLOAT:  properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::floating_point, .value =            (      float)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::DOUBLE: properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::floating_point, .value =            (     double)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::BOOL:   properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::boolean,        .value =            (       bool)value }); break;
+                        case mysqlx::abi2::r0::Value::Type::STRING: properties[column.getColumnName()]->deserialize_value(serialized { .type = serialized::string,         .value =            (std::string)value }); break;
                     }
                 }
 

@@ -7,13 +7,14 @@ namespace mysql {
     private:
         connection();
 
-        static std::string url;
-        static std::string db_name;
+        static std::string  server;
+        static unsigned int port;
+        static std::string  user;
+        static std::string  password;
+        static std::string  db_name;
 
     public:
         static connection& get_instance();
-        static void set_url(std::string url);
-        static void set_db_name(std::string db_name);
 
         mysqlx::Session session;
         mysqlx::Schema  db;
