@@ -34,7 +34,7 @@ class property : public base_property {
 private:
     T value;
 
-protected:
+public:
     serialized serialize_value_b() noexcept(true) requires(std::same_as<bool,           T>) { return serialized { serialized::boolean,                      value  }; }
     serialized serialize_value_f() noexcept(true) requires(std::floating_point         <T>) { return serialized { serialized::floating_point, (long double) value  }; }
     serialized serialize_value_i() noexcept(true) requires(std::integral               <T>) { return serialized { serialized::integer,        (long   long) value  }; }
@@ -65,7 +65,6 @@ protected:
         if constexpr(to_string_serializable      <T>) { deserialize_value_s(val); return; }
     }
 
-public:
     property(const property<T>&  value) requires (std::copy_constructible<T>) = default;
     property(      property<T>&& value) requires (std::move_constructible<T>) = default;
 
@@ -80,7 +79,8 @@ public:
 
     operator T&() { return value; }
 
-    bool operator==(const char* str) requires (to_string_serializable<T>) { return std::string(value) == str; }
+    template<to_string_serializable S>
+    bool operator==(S str) requires (to_string_serializable<T>) { return std::string(value) == str; }
 };
 
 #include "Model.hpp"

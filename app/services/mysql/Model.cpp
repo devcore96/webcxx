@@ -8,6 +8,8 @@ namespace mysql {
     // todo: protect against sql injections: use bind!
     // todo: take advantage of statement preparation!
     // todo: figure out why IDs are so random
+    // todo: ID retrieval is not thread safe
+    // todo: implement a way of inserting multiple rows simultaneously
     void model::save() {
         auto& session = connection::get_instance().session;
         auto& db      = connection::get_instance().db;
@@ -47,16 +49,18 @@ namespace mysql {
                 auto value = property.second->serialize_value();
 
                 switch(value.type) {
-                    case serialized::integer:        row.set(index++, std::get<long long     >(value.value)); break;
-                    case serialized::floating_point: row.set(index++, std::get<long double   >(value.value)); break;
-                    case serialized::boolean:        row.set(index++, std::get<bool          >(value.value)); break;
-                    case serialized::null:           row.set(index++, std::get<std::nullptr_t>(value.value)); break;
-                    case serialized::string:         row.set(index++, std::get<std::string   >(value.value)); break;
+                    case serialized::integer:        row.set(index++,         std::get<long long     >(value.value)); break;
+                    case serialized::floating_point: row.set(index++, (double)std::get<long double   >(value.value)); break;
+                    case serialized::boolean:        row.set(index++,         std::get<bool          >(value.value)); break;
+                    case serialized::null:           row.set(index++,         std::get<std::nullptr_t>(value.value)); break;
+                    case serialized::string:         row.set(index++,         std::get<std::string   >(value.value)); break;
                 }
             }
 
             t.insert().values(row).execute();
 
+            id = session.sql("SELECT LAST_INSERT_ID();").execute().fetchOne()[0];
+            
             created = true;
         }
     }
