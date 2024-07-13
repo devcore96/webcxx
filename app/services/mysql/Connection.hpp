@@ -2,6 +2,8 @@
 
 #include <mysql-cppconn-8/mysqlx/xdevapi.h>
 
+#include "Transaction.hpp"
+
 namespace mysql {
     class connection {
     private:
@@ -18,5 +20,10 @@ namespace mysql {
 
         mysqlx::Session session;
         mysqlx::Schema  db;
+
+        transaction begin();
+
+        static void set_server  (std::string server);
+        static void set_password(std::string password);
     };
 }

@@ -4,6 +4,12 @@
 #include <stdexcept>
 
 namespace json {
+    json_value array() {
+        std::vector<json_value> values;
+
+        return { values };
+    }
+
     std::ostream& operator<<(std::ostream& lhs, json& rhs) {
         lhs << rhs.beautify();
         return lhs;
@@ -68,7 +74,7 @@ namespace json {
     json& json::operator=(const json_value&  value) { return *this = value.operator json(); }
     json& json::operator=(      json_value&& value) { return *this = value.operator json(); }
 
-    json serializer::serialize(base_model& model) {
+    json serializer::serialize(base_model& model) const {
         auto& properties = get_properties(model);
 
         json object;
@@ -88,7 +94,7 @@ namespace json {
         return object;
     }
 
-    void serializer::deserialize(base_model& model, json object) {
+    void serializer::deserialize(base_model& model, json object) const {
         auto& properties = get_properties(model);
 
         for(auto& key_value_pair : properties) {

@@ -41,11 +41,6 @@ namespace mysql {
             size_t index = 0;
 
             for(auto& property : sorted_properties) {
-                if (index == 0) {
-                    row.set(index++, 0);
-                    continue;
-                }
-
                 auto value = property.second->serialize_value();
 
                 switch(value.type) {

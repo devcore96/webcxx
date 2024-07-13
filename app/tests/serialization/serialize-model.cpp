@@ -4,7 +4,7 @@
 class test_model : public base_model {
 public:
     property<int>             int_val { this, "int",    10      };
-    property<float>         float_val { this, "float",  3.1415  };
+    property<double>        float_val { this, "float",  3.1415  };
     property<bool>           bool_val { this, "bool",   false   };
     property<std::nullptr_t> null_val { this, "null",   nullptr };
     property<std::string>  string_val { this, "string", "test"  };

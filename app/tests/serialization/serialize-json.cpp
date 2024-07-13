@@ -1,5 +1,5 @@
 #include "../../services/serialization/Json.hpp"
-
+#include <iostream>
 int main(int argc, const char* argv[]) {
     json::json object;
 
@@ -10,9 +10,11 @@ int main(int argc, const char* argv[]) {
     object["string"] = "string";
 
     std::string str = object;
-    std::string expected = R"({ "bool": true, "float": 3.215000, "int": 80, "null": null, "string": "string" })";
+    std::string expected = R"({ "bool": true, "float": 3.215, "int": 80, "null": null, "string": "string" })";
 
-    if (str != expected) return 1;
+    if (str != expected) {
+        return 1;
+    }
 
     return 0;
 }

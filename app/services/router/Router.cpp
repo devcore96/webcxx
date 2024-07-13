@@ -1,5 +1,6 @@
 #include <exception>
 #include <algorithm>
+#include <version>
 
 #ifdef __cpp_lib_stacktrace
 # include <stacktrace>

@@ -9,6 +9,7 @@
 
 namespace mysql {
     class model;
+    class joined_table;
     
     template<class Model>
     class table : public db::table,
@@ -16,7 +17,9 @@ namespace mysql {
     protected:
         friend class model;
 
-        std::vector<std::shared_ptr<db::model>> get(std::vector<db::where_query_t> wheres) const {
+        std::vector<std::shared_ptr<db::model>> get(std::vector<db::where_query_t>    wheres,
+                                                    std::vector<db::order_by_query_t> order_bys,
+                                                    size_t                            limit) const {
             auto& session = connection::get_instance().session;
             auto& db      = connection::get_instance().db;
             auto  table   = db.getTable(name);
@@ -33,7 +36,11 @@ namespace mysql {
                 select = select.where(std::format("{} {} {}", condition.key, condition.query_operator, condition.value));
             }
 
-            auto result = select.execute();
+            for (auto& condition : order_bys) {
+                select = select.orderBy(std::format("{} {}", condition.key, (condition.asc ? "ASC" : "DESC")));
+            }
+
+            auto result = select.limit(limit).execute();
             auto& columns = result.getColumns();
 
             for(auto row : result) {
@@ -71,9 +78,74 @@ namespace mysql {
 
         table& operator=(const table& ) = default;
         table& operator=(      table&&) = default;
+        
+        void insert(std::vector<std::shared_ptr<db::model>> models) const {
+            auto& session = connection::get_instance().session;
+            auto& db      = connection::get_instance().db;
+            auto  table   = db.getTable(name);
 
-        std::vector<std::shared_ptr<db::model>> all() const {
-            return get({});
+            if (!table.existsInDatabase()) {
+                throw std::runtime_error(std::format("Cannot insert models: table \"{}\" does not exist in the database.", name));
+            }
+
+            std::vector<mysqlx::abi2::Row> rows;
+
+            auto insert_statement = table.insert();
+
+            for (auto& model : models) {
+                mysqlx::abi2::Row row;
+                
+                size_t index = 0;
+
+                for(auto& property : get_sorted_properties(*model)) {
+                    auto value = property.second->serialize_value();
+
+                    switch(value.type) {
+                        case serialized::integer:        row.set(index++,         std::get<long long     >(value.value)); break;
+                        case serialized::floating_point: row.set(index++, (double)std::get<long double   >(value.value)); break;
+                        case serialized::boolean:        row.set(index++,         std::get<bool          >(value.value)); break;
+                        case serialized::null:           row.set(index++,         std::get<std::nullptr_t>(value.value)); break;
+                        case serialized::string:         row.set(index++,         std::get<std::string   >(value.value)); break;
+                    }
+                }
+
+                insert_statement = insert_statement.values(row);
+            }
+
+            insert_statement.execute();
+
+            size_t last = session.sql("SELECT LAST_INSERT_ID();").execute().fetchOne()[0];
+
+            size_t i = 1;
+
+            for (auto& model : models) {
+                if (model->id == 0) {
+                    model->id = last - models.size() + (i++);
+                } else i++;
+            }
+        }
+
+        void remove(std::vector<std::shared_ptr<db::model>> models) const {
+            auto& session = connection::get_instance().session;
+            auto& db      = connection::get_instance().db;
+            auto  table   = db.getTable(name);
+
+            if (!table.existsInDatabase()) {
+                throw std::runtime_error(std::format("Cannot remove models: table \"{}\" does not exist in the database.", name));
+            }
+
+            std::string condition = "";
+            size_t i = 0;
+
+            for (auto& model : models) {
+                if (!condition.empty()) {
+                    condition += ",";
+                }
+
+                condition += std::to_string((size_t)model->id);
+            }
+
+            table.remove().where("id IN [" + condition + "]").execute();
         }
 
         void create() const {
@@ -82,6 +154,48 @@ namespace mysql {
 
         void destroy() const {
             // todo
+        }
+
+        void clear() const {
+            auto& session = connection::get_instance().session;
+            auto& db      = connection::get_instance().db;
+            auto  table   = db.getTable(name);
+
+            if (!table.existsInDatabase()) {
+                throw std::runtime_error(std::format("Cannot remove models: table \"{}\" does not exist in the database.", name));
+            }
+
+            table.remove().where("id > 0").execute();
+        }
+
+        std::shared_ptr<db::joined_table> join(const base_table& that, std::string this_key, std::string that_key) const {
+            return std::make_shared<joined_table>(this, &that, this_key, that_key);
+        }
+    };
+
+    class joined_table : public db::joined_table {
+    protected:
+        std::vector<std::shared_ptr<db::model>> get(std::vector<db::where_query_t>    wheres,
+                                                    std::vector<db::order_by_query_t> order_bys,
+                                                    size_t                            limit) const {
+            // todo
+
+            return { };
+        };
+
+        bool joined = false;
+
+    public:
+        joined_table(const base_table* this_table,
+                     const base_table* that_table,
+                           std::string this_key,
+                           std::string that_key) : db::joined_table(this_table,
+                                                                    that_table,
+                                                                    this_key,
+                                                                    that_key) { }
+
+        std::shared_ptr<db::joined_table> join(const base_table& that, std::string this_key, std::string that_key) const {
+            return std::make_shared<joined_table>(this, &that, this_key, that_key);
         }
     };
 }

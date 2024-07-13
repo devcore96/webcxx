@@ -255,8 +255,18 @@ namespace json {
             return "";
         }
 
+        size_t size() {
+            switch (type) {
+                case unset: return 0;
+                case array: return std::get<std::vector<json_value>>(value).size();
+                default: throw std::runtime_error("This json value is not an array.");
+            }
+        }
+
         type_t get_type() { return type; }
     };
+
+    json_value array();
 
     std::ostream& operator<<(std::ostream& lhs, json& rhs);
     std::ostream& operator<<(std::ostream& lhs, json_value& rhs);
@@ -441,7 +451,7 @@ namespace json {
         parser p;
 
     public:
-        json   serialize(base_model& model);
-        void deserialize(base_model& model, json object);
+        json   serialize(base_model& model)              const;
+        void deserialize(base_model& model, json object) const;
     };
 }

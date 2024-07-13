@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.hpp"
+#include "Executable.hpp"
 
 #include <memory>
 #include <vector>
@@ -8,59 +9,35 @@
 #include <sstream>
 
 namespace db {
-    class base_table {
+    class joined_table;
+
+    class base_table : public ISearchable {
     protected:
+        friend class joined_table;
+        friend class IExecutable;
+
         std::string name;
 
-    public:
-        virtual void create() const = 0;
-    };
+        virtual std::vector<std::shared_ptr<model>> get(std::vector<where_query_t>    wheres,
+                                                        std::vector<order_by_query_t> order_bys,
+                                                        size_t                        limit) const = 0;
 
-    struct where_query_t {
-        std::string key;
-        std::string value;
-        std::string query_operator;
-    };
-
-    class table;
-
-    class where_query {
-    private:
-        friend class table;
-
-        table& t;
-        std::vector<where_query_t> wheres;
+        bool joined = false;
 
     public:
-        where_query(table& t) : t(t) { }
-        template<typename T>
-        where_query& where(std::string key, T value, std::string query_operator) {
-            std::ostringstream stream;
-            stream << value;
+        base_table() : ISearchable(*this, -1, { }, { }) { }
+        base_table(const base_table& ) = default;
+        base_table(      base_table&&) = default;
 
-            wheres.push_back(where_query_t {
-                .key = key,
-                .value = stream.str(),
-                .query_operator = query_operator
-            });
+        std::vector<std::shared_ptr<model>> all() const;
 
-            return *this;
-        }
-
-        std::vector<std::shared_ptr<model>> get();
+        virtual std::shared_ptr<joined_table> join(const base_table& that, std::string this_key, std::string that_key) const = 0;
     };
 
     class table : public base_table {
-    protected:
-        friend class where_query;
-
-        std::string name;
-
-        virtual std::vector<std::shared_ptr<model>> get(std::vector<where_query_t> wheres) const = 0;
-
     public:
         template<std::derived_from<model> Model>
-        table(Model m) : name(m.table_name()) { }
+        table(Model m) { name = m.table_name(); }
         
         table(const table& ) = default;
         table(      table&&) = default;
@@ -68,24 +45,49 @@ namespace db {
         table& operator=(const table& ) = default;
         table& operator=(      table&&) = default;
 
-        virtual std::vector<std::shared_ptr<model>> all() const = 0;
+        virtual void insert(std::vector<std::shared_ptr<db::model>> models) const = 0;
+        virtual void remove(std::vector<std::shared_ptr<db::model>> models) const = 0;
         virtual void create() const = 0;
         virtual void destroy() const = 0;
+        virtual void clear() const = 0;
+    };
 
-        template<typename T>
-        where_query where(std::string key, T value, std::string query_operator) const {
-            where_query where { *this };
+    struct join_t {
+        const base_table* this_table;
+        const base_table* that_table;
 
-            std::ostringstream stream;
-            stream << value;
+        std::string this_key;
+        std::string that_key;
+    };
 
-            where.wheres.push_back(where_query_t {
-                .key = key,
-                .value = stream.str(),
-                .query_operator = query_operator
+    class joined_table : public base_table {
+    private:
+        void add_joins(const base_table* t) {
+            if (t->joined) {
+                const joined_table* joined = (const joined_table*)t;
+
+                joins.insert(joins.end(),
+                      joined->joins.begin(),
+                      joined->joins.end());
+            }
+        }
+
+    protected:
+        std::vector<join_t> joins;
+        
+        joined_table(const base_table* this_table,
+                     const base_table* that_table,
+                           std::string this_key,
+                           std::string that_key) {
+            joins.push_back({
+                .this_table = this_table,
+                .that_table = that_table,
+                .this_key   = this_key,
+                .that_key   = that_key
             });
-
-            return where;
+            
+            add_joins(this_table);
+            add_joins(that_table);
         }
     };
 }
