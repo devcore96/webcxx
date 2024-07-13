@@ -1,4 +1,4 @@
-_CXXFLAGS=-std=c++26 -O3 -ffast-math -I. -DMYSQLPP_MYSQL_HEADERS_BURIED
+_CXXFLAGS=-std=c++23 -O3 -ffast-math -I. -DMYSQLPP_MYSQL_HEADERS_BURIED
 
 MAIN=.out/app/kernel/Main.o \
 
