@@ -7,6 +7,12 @@ namespace db {
                      limit);
     }
 
+    void IExecutable::remove() const {
+        t.remove(wheres,
+                 order_bys,
+                 limit);
+    }
+
     std::vector<std::shared_ptr<model>> base_table::all() const {
         return get({ },
                    { },

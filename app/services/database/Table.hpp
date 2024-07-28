@@ -22,6 +22,10 @@ namespace db {
                                                         std::vector<order_by_query_t> order_bys,
                                                         size_t                        limit) const = 0;
 
+        virtual void remove(std::vector<where_query_t>    wheres,
+                            std::vector<order_by_query_t> order_bys,
+                            size_t                        limit) const = 0;
+
         bool joined = false;
 
     public:

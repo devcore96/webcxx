@@ -71,6 +71,28 @@ namespace mysql {
             return models;
         }
 
+        void remove(std::vector<db::where_query_t>    wheres,
+                    std::vector<db::order_by_query_t> order_bys,
+                    size_t                            limit) const {
+            auto& session = connection::get_instance().session;
+            auto& db      = connection::get_instance().db;
+            auto  table   = db.getTable(name);
+
+            if (!table.existsInDatabase()) {
+                throw std::runtime_error(std::format("Cannot remove models: table \"{}\" does not exist in the database.", name));
+            }
+
+            std::vector<std::shared_ptr<db::model>> models;
+
+            auto remove = table.remove();
+
+            for (auto& condition : wheres) {
+                remove = remove.where(std::format("{} {} {}", condition.key, condition.query_operator, condition.value));
+            }
+
+            remove.limit(limit).execute();
+        }
+
     public:
         table() : db::table(Model { }) { };
         table(const table& ) = default;
@@ -181,7 +203,13 @@ namespace mysql {
             // todo
 
             return { };
-        };
+        }
+
+        void remove(std::vector<db::where_query_t>    wheres,
+                    std::vector<db::order_by_query_t> order_bys,
+                    size_t                            limit) const {
+            // todo
+        }
 
         bool joined = false;
 

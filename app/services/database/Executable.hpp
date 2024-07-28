@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.hpp"
+#include "../tools/Container.hpp"
 
 #include <vector>
 #include <memory>
@@ -46,7 +47,8 @@ namespace db {
             wheres(wheres) { }
 
     public:
-        std::vector<std::shared_ptr<model>> get() const;
+        std::vector<std::shared_ptr<model>>    get() const;
+        void remove() const;
     };
     
     class ILimitable : public IExecutable {
@@ -113,12 +115,58 @@ namespace db {
         template<typename T>
         ISearchable where(std::string key, T value, std::string query_operator) {
             std::ostringstream stream;
+
+            if constexpr (std::same_as<T, const char*> || std::same_as<T, char*> || std::same_as<T, std::string>) {
+                stream << "\"";
+            }
+
             stream << value;
+
+            if constexpr (std::same_as<T, const char*> || std::same_as<T, char*> || std::same_as<T, std::string>) {
+                stream << "\"";
+            }
 
             wheres.push_back(where_query_t {
                 .key = key,
                 .value = stream.str(),
                 .query_operator = query_operator
+            });
+
+            return ISearchable {
+                t,
+                (size_t)-1,
+                { },
+                wheres
+            };
+        }
+
+        template<template<typename> class IterableType, typename ValueType>
+            requires iterable<IterableType<ValueType>>
+        ISearchable whereIn(std::string key, IterableType<ValueType> values) {
+            std::ostringstream stream;
+            
+            stream << "[";
+
+            for (auto& value : values) {
+
+                if constexpr (std::same_as<ValueType, const char*> || std::same_as<ValueType, char*> || std::same_as<ValueType, std::string>) {
+                    stream << "\"";
+                }
+
+                stream << value;
+
+                if constexpr (std::same_as<ValueType, const char*> || std::same_as<ValueType, char*> || std::same_as<ValueType, std::string>) {
+                    stream << "\"";
+                }
+
+            }
+
+            stream << "]";
+
+            wheres.push_back(where_query_t {
+                .key = key,
+                .value = stream.str(),
+                .query_operator = "IN"
             });
 
             return ISearchable {
