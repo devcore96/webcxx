@@ -113,6 +113,7 @@ namespace db {
 
     public:
         template<typename T>
+        // todo: swap order of value and query_operator...
         ISearchable where(std::string key, T value, std::string query_operator) {
             std::ostringstream stream;
 
@@ -145,9 +146,10 @@ namespace db {
         ISearchable whereIn(std::string key, IterableType<ValueType> values) {
             std::ostringstream stream;
             
-            stream << "[";
+            stream << "(";
 
-            for (auto& value : values) {
+            for (auto it = values.begin(); it != values.end();) {
+                auto value = *it;
 
                 if constexpr (std::same_as<ValueType, const char*> || std::same_as<ValueType, char*> || std::same_as<ValueType, std::string>) {
                     stream << "\"";
@@ -159,9 +161,12 @@ namespace db {
                     stream << "\"";
                 }
 
+                if (++it != values.end()) {
+                    stream << ",";
+                }
             }
 
-            stream << "]";
+            stream << ")";
 
             wheres.push_back(where_query_t {
                 .key = key,

@@ -92,22 +92,24 @@ bool complete_route(std::string route, std::string url, std::map<std::string, st
                 throw std::runtime_error("Route " + route + " is ill-formed.");
             }
 
-            std::function<std::any(std::string)> conversion_function;
-
-            try {
-                conversion_function = value_mappers[type];
-            } catch(std::exception &e) {
-                throw std::runtime_error("Route " + route + " is ill-formed: Unknown value type \"" + type + "\".");
-            }
-
             std::any value;
 
-            try {
-                value = conversion_function(info.path[id]);
-            } catch(std::bad_cast &e) { 
-                params.clear();
-                return false;
-            }
+            if (type != "string") {
+                std::function<std::any(std::string)> conversion_function;
+
+                try {
+                    conversion_function = value_mappers[type];
+                } catch(std::exception &e) {
+                    throw std::runtime_error("Route " + route + " is ill-formed: Unknown value type \"" + type + "\".");
+                }
+
+                try {
+                    value = conversion_function(info.path[id]);
+                } catch(std::bad_cast &e) { 
+                    params.clear();
+                    return false;
+                }
+            } else value = info.path[id];
 
             params.insert({ name, value });
         } else if(slug != info.path[id]) {
