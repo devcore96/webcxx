@@ -1,2 +1,5 @@
 index.cgi
+/jobs
 .out
+/tests
+/build/build
