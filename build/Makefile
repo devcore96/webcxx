@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++26 -Ofast -ffast-math -I. -w -g
+CXXFLAGS=-std=c++23 -Ofast -ffast-math -I. -w -g
 
 OBJECTS=.out/Terminal.o \
 		.out/ProgressBar.o \
@@ -8,9 +8,9 @@ OBJECTS=.out/Terminal.o \
 		.out/BuildManager.o \
 		.out/Main.o \
 
-all: $(OBJECTS) 
+all: $(OBJECTS)
 	@$(CXX) $(CXXFLAGS) -o build $(OBJECTS)
-	
+
 .out/%.o: %.cpp
 	@$(CXX) $(CXXFLAGS) -c -o $@ $<;
 
