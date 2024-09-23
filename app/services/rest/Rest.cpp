@@ -18,7 +18,7 @@ namespace rest {
         return size * nmemb;
     }
 
-    response get(url& u, std::vector<header> headers) {
+    response get(const url& u, std::vector<header> headers) {
         CURL* curl = curl_easy_init();
 
         if (!curl) {
@@ -52,7 +52,7 @@ namespace rest {
         return res;
     }
 
-    response post(url& u, std::string data, std::vector<header> headers) {
+    response post(const url& u, std::string data, std::vector<header> headers) {
         CURL* curl = curl_easy_init();
 
         if (!curl) {
@@ -88,15 +88,15 @@ namespace rest {
         return res;
     }
 
-    response post(url& u, json data, std::vector<header> headers) {
+    response post(const url& u, json data, std::vector<header> headers) {
         return post(u, (std::string)data, headers);
     }
 
-    response post(url& u, const char* data, std::vector<header> headers) {
+    response post(const url& u, const char* data, std::vector<header> headers) {
         return post(u, std::string(data), headers);
     }
 
-    response do_delete(url& u, std::vector<header> headers) {
+    response do_delete(const url& u, std::vector<header> headers) {
         CURL* curl = curl_easy_init();
 
         if (!curl) {

@@ -169,9 +169,9 @@ namespace rest {
     
     extern curl_initializer _initializer;
 
-    response get(url& u, std::vector<header> headers = { });
-    response post(url& u, std::string data, std::vector<header> headers = { });
-    response post(url& u, json data, std::vector<header> headers = { });
-    response post(url& u, const char* data, std::vector<header> headers = { });
-    response do_delete(url& u, std::vector<header> headers = { });
+    response       get(const url& u,                   std::vector<header> headers = { });
+    response      post(const url& u, std::string data, std::vector<header> headers = { });
+    response      post(const url& u,        json data, std::vector<header> headers = { });
+    response      post(const url& u, const char* data, std::vector<header> headers = { });
+    response do_delete(const url& u,                   std::vector<header> headers = { });
 }
