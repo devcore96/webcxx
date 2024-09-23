@@ -27,7 +27,5 @@ Supported features:
 
 ## Tests status
 ![Build status with MySQL](https://github.com/devcore96/webcxx/actions/workflows/build-mysql.yml/badge.svg)
-![Tests status with MySQL](https://github.com/devcore96/webcxx/actions/workflows/run-tests-mysql.yaml/badge.svg)
 
 ![Build status without DB](https://github.com/devcore96/webcxx/actions/workflows/build-no-db.yml/badge.svg)
-![Tests status without DB](https://github.com/devcore96/webcxx/actions/workflows/run-tests-no-db.yaml/badge.svg)
