@@ -106,7 +106,7 @@ int main()
     // Set compiler flags
     std::vector<std::string> flags;
 
-    flags.push_back("-std=c++26");
+    flags.push_back("-std=c++23");
     flags.push_back("-Ofast");
     flags.push_back("-ffast-math");
     flags.push_back("-pthread");
