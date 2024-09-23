@@ -20,11 +20,12 @@ namespace json {
         return lhs;
     }
 
-    json::operator std::string() {
+    json::operator std::string() const {
         std::string str = "{ ";
 
         for (auto& value_pair : values)
-            str += "\"" + value_pair.first + "\": " + (value_pair.second.operator std::string()) + ", ";
+            if (value_pair.second.get_type() != json_value::type_t::unset)
+                str += "\"" + value_pair.first + "\": " + (value_pair.second.operator std::string()) + ", ";
 
         // Remove excess ", " from the end
         if (str.length() > 2)
@@ -45,7 +46,7 @@ namespace json {
 
     void json::set(std::string key, json_value value) { values.emplace(key, value); }
 
-    std::string json::beautify(size_t layer) {
+    std::string json::beautify(size_t layer) const {
         std::string str = "{\n";
 
         std::string tabs = "";
@@ -55,7 +56,8 @@ namespace json {
         }
 
         for (auto& value_pair : values)
-            str += tabs + "    \"" + value_pair.first + "\": " + value_pair.second.beautify(layer + 1) + ",\n";
+            if (value_pair.second.get_type() != json_value::type_t::unset)
+                str += tabs + "    \"" + value_pair.first + "\": " + value_pair.second.beautify(layer + 1) + ",\n";
 
         // Remove excess "," from the end
         if (str.length() > 2)

@@ -25,5 +25,7 @@ namespace mysql {
 
         static void set_server  (std::string server);
         static void set_password(std::string password);
+
+        std::string get_db_name();
     };
 }

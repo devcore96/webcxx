@@ -40,6 +40,8 @@ public:
     serialized serialize_value_i() noexcept(true) requires(std::integral               <T>) { return serialized { serialized::integer,        (long   long) value  }; }
     serialized serialize_value_n() noexcept(true) requires(std::same_as<std::nullptr_t, T>) { return serialized { serialized::null,                         value  }; }
     serialized serialize_value_s() noexcept(true) requires(to_string_serializable      <T>) { return serialized { serialized::string,           std::string(value) }; }
+    serialized serialize_value_m() noexcept(true) requires(model_serializable          <T>) { return serialized { serialized::model,                        value  }; }
+    serialized serialize_value_M() noexcept(true) requires(model_container_serializable<T>) { return serialized { serialized::models, map_to(value, [](auto v) { return v; }) }; }
 
     serialized serialize_value() {
         if constexpr(std::same_as<bool,           T>) return serialize_value_b();
@@ -47,22 +49,29 @@ public:
         if constexpr(std::integral               <T>) return serialize_value_i();
         if constexpr(std::same_as<std::nullptr_t, T>) return serialize_value_n();
         if constexpr(to_string_serializable      <T>) return serialize_value_s();
+        if constexpr(model_serializable          <T>) return serialize_value_m();
+        if constexpr(model_container_serializable<T>) return serialize_value_M();
 
         return { };
     }
 
-    void deserialize_value_b(serialized val) requires(std::same_as<bool,           T>) { if (val.type != serialized::boolean       ) throw std::bad_cast(); value = std::get<bool          >(val.value); }
-    void deserialize_value_f(serialized val) requires(std::floating_point         <T>) { if (val.type != serialized::floating_point) throw std::bad_cast(); value = std::get<long double   >(val.value); }
-    void deserialize_value_i(serialized val) requires(std::integral               <T>) { if (val.type != serialized::integer       ) throw std::bad_cast(); value = std::get<long long     >(val.value); }
-    void deserialize_value_n(serialized val) requires(std::same_as<std::nullptr_t, T>) { if (val.type != serialized::null          ) throw std::bad_cast(); value = std::get<std::nullptr_t>(val.value); }
-    void deserialize_value_s(serialized val) requires(to_string_serializable      <T>) { if (val.type != serialized::string        ) throw std::bad_cast(); value = std::get<std::string   >(val.value); }
+    void deserialize_value_b(serialized val) requires(std::same_as<bool,           T>) { if (val.type != serialized::boolean       ) throw std::bad_cast(); value = std::get<bool                                    >(val.value); }
+    void deserialize_value_f(serialized val) requires(std::floating_point         <T>) { if (val.type != serialized::floating_point) throw std::bad_cast(); value = std::get<long double                             >(val.value); }
+    void deserialize_value_i(serialized val) requires(std::integral               <T>) { if (val.type != serialized::integer       ) throw std::bad_cast(); value = std::get<long long                               >(val.value); }
+    void deserialize_value_n(serialized val) requires(std::same_as<std::nullptr_t, T>) { if (val.type != serialized::null          ) throw std::bad_cast(); value = std::get<std::nullptr_t                          >(val.value); }
+    void deserialize_value_s(serialized val) requires(to_string_serializable      <T>) { if (val.type != serialized::string        ) throw std::bad_cast(); value = std::get<std::string                             >(val.value); }
+    void deserialize_value_m(serialized val) requires(model_serializable          <T>) { if (val.type != serialized::model         ) throw std::bad_cast(); value = std::get<std::shared_ptr<base_model>             >(val.value); }
+    void deserialize_value_M(serialized val) requires(model_container_serializable<T>) { if (val.type != serialized::models        ) throw std::bad_cast(); value = std::get<std::vector<std::shared_ptr<base_model>>>(val.value); }
 
     void deserialize_value(serialized val) {
-        if constexpr(std::same_as<bool,           T>) { deserialize_value_b(val); return; }
+        // bool might show up as 0 / 1 in some cases instead of false / true, such as in SQL.
+        if constexpr(std::same_as<bool,           T>) { try { deserialize_value_b(val); } catch (std::bad_cast& e) { deserialize_value_i(val); } return; }
         if constexpr(std::floating_point         <T>) { deserialize_value_f(val); return; }
         if constexpr(std::integral               <T>) { deserialize_value_i(val); return; }
         if constexpr(std::same_as<std::nullptr_t, T>) { deserialize_value_n(val); return; }
         if constexpr(to_string_serializable      <T>) { deserialize_value_s(val); return; }
+        if constexpr(model_serializable          <T>) { deserialize_value_m(val); return; }
+        if constexpr(model_container_serializable<T>) { deserialize_value_M(val); return; }
     }
 
     property(const property<T>&  value) requires (std::copy_constructible<T>) = default;

@@ -29,4 +29,8 @@ namespace mysql {
     void connection::set_password(std::string password) {
         connection::password = password;
     }
+    
+    std::string connection::get_db_name() {
+        return db_name;
+    }
 }

@@ -28,7 +28,7 @@ namespace json {
         json& operator=(const json_value& );
         json& operator=(      json_value&&);
 
-        operator std::string();
+        operator std::string() const;
         json_value& operator[](std::string key);
 
         void   set(std::string key, json_value value);
@@ -39,7 +39,7 @@ namespace json {
         std::map<std::string, json_value>::reverse_iterator rbegin();
         std::map<std::string, json_value>::reverse_iterator   rend();
 
-        std::string beautify(size_t layer = 0);
+        std::string beautify(size_t layer = 0) const;
     };
 
     class json_value {
@@ -95,20 +95,20 @@ namespace json {
         // array
         json_value& operator=(std::vector<json_value> values) { type = array;  value = values;                                                     return *this; }
 
-        bool operator==(std::nullptr_t            val) { return type == basic    && std::get<std::string>(value) == "null"; }
-        bool operator==(std::string               val) { return type == basic    && std::get<std::string>(value) ==  val; }
-        bool operator==(const char*               val) { return type == basic    && std::get<std::string>(value) ==  val; }
-        bool operator==(      char*               val) { return type == basic    && std::get<std::string>(value) ==  val; }
-        bool operator==(bool                      val) { return type == basic    && std::get<std::string>(value) == (val ? "true" : "false"); }
-        bool operator==(json                      val) { return type == object   &&        ((std::string) *this) == ((std::string)val); }
-        bool operator==(std::vector<json_value>   val) { return type == array    &&        ((std::string) *this) == ((std::string)json_value { val }); }
-        bool operator==(json_value                val) { return type == val.type &&        ((std::string) *this) == ((std::string)val); }
-        bool operator==(std::integral       auto  val) { if    (type != basic) return false; std::istringstream ss(std::get<std::string>(value)); auto _value = (decltype(val))0; ss >> _value; return _value == val; }
-        bool operator==(std::floating_point auto  val) { if    (type != basic) return false; std::istringstream ss(std::get<std::string>(value)); auto _value = (decltype(val))0; ss >> _value; return _value == val; }
+        bool operator==(const char*                      val) { return type == basic    && std::get<std::string>(value) ==  val; }
+        bool operator==(      char*                      val) { return type == basic    && std::get<std::string>(value) ==  val; }
+        bool operator==(const std::nullptr_t           & val) { return type == basic    && std::get<std::string>(value) == "null"; }
+        bool operator==(const std::string              & val) { return type == basic    && std::get<std::string>(value) ==  val; }
+        bool operator==(const bool                     & val) { return type == basic    && std::get<std::string>(value) == (val ? "true" : "false"); }
+        bool operator==(const json                     & val) { return type == object   &&        ((std::string) *this) == ((std::string)val); }
+        bool operator==(const std::vector<json_value>  & val) { return type == array    &&        ((std::string) *this) == ((std::string)json_value { val }); }
+        bool operator==(const json_value               & val) { return type == val.type &&        ((std::string) *this) == ((std::string)val); }
+        bool operator==(const std::integral       auto & val) { if    (type != basic) return false; std::istringstream ss(std::get<std::string>(value)); auto _value = (decltype(val))0; ss >> _value; return _value == val; }
+        bool operator==(const std::floating_point auto & val) { if    (type != basic) return false; std::istringstream ss(std::get<std::string>(value)); auto _value = (decltype(val))0; ss >> _value; return _value == val; }
 
         bool isset() { return type != unset; }
 
-        operator std::string() {
+        operator std::string() const {
             switch (type) {
                 case basic: return std::get<std::string>(value);
                 case object: return (std::string)std::get<json>(value);
@@ -120,7 +120,8 @@ namespace json {
                     std::string ret = "[ ";
 
                     for (auto& value : values)
-                        ret += (std::string)value + ", ";
+                        if (value.type != type_t::unset)
+                            ret += (std::string)value + ", ";
 
                     ret = ret.substr(0, ret.length() - 2) + " ]";
 
@@ -130,7 +131,7 @@ namespace json {
             return "";
         }
 
-        std::string unescaped() {
+        std::string unescaped() const {
             std::string ret = *this;
 
             if (ret[0] == '"') {
@@ -226,7 +227,7 @@ namespace json {
             return std::get<std::vector<json_value>>(value).rend();
         }
 
-        std::string beautify(size_t layer = 0) {
+        std::string beautify(size_t layer = 0) const {
             switch (type) {
                 case basic: return std::get<std::string>(value);
                 case object: return std::get<json>(value).beautify(layer);
@@ -243,9 +244,10 @@ namespace json {
                         tabs += "    ";
                     }
 
-                    for (auto& value : values) {
-                        ret += tabs + "    " + value.beautify(layer + 1) + ",\n";
-                    }
+                    for (auto& value : values)
+                        if (value.type != type_t::unset) {
+                            ret += tabs + "    " + value.beautify(layer + 1) + ",\n";
+                        }
 
                     ret = ret.substr(0, ret.length() - 2) + '\n' + tabs + "]";
 
@@ -255,7 +257,7 @@ namespace json {
             return "";
         }
 
-        size_t size() {
+        size_t size() const {
             switch (type) {
                 case unset: return 0;
                 case array: return std::get<std::vector<json_value>>(value).size();
@@ -263,7 +265,7 @@ namespace json {
             }
         }
 
-        type_t get_type() { return type; }
+        type_t get_type() const { return type; }
     };
 
     json_value array();
@@ -339,23 +341,23 @@ namespace json {
                 [](std::string str, json_token& token) {                                                       return std::nullopt; } },
 
             // json tokens
-            { std::string("{"),
+            { "{",
                 [](std::string str, json_token& token) {                                                       return object_begin; } },
-            { std::string("}"),
+            { "}",
                 [](std::string str, json_token& token) {                                                       return object_end;   } },
-            { std::string("["),
+            { "[",
                 [](std::string str, json_token& token) {                                                       return array_begin;  } },
-            { std::string("]"),
+            { "]",
                 [](std::string str, json_token& token) {                                                       return array_end;    } },
-            { std::string(","),
+            { ",",
                 [](std::string str, json_token& token) {                                                       return comma;        } },
-            { std::string(":"),
+            { ":",
                 [](std::string str, json_token& token) {                                                       return colon;        } },
-            { std::string("true"),
+            { "true",
                 [](std::string str, json_token& token) { token = json_value { true };                          return value_true;   } },
-            { std::string("false"),
+            { "false",
                 [](std::string str, json_token& token) { token = json_value { false };                         return value_false;  } },
-            { std::string("null"),
+            { "null",
                 [](std::string str, json_token& token) { token = json_value { nullptr };                       return value_null;   } },
             { std::regex("^\".*?\""),
                 [](std::string str, json_token& token) { token = json_value { str.substr(1, str.size() - 2) }; return value_string; } },

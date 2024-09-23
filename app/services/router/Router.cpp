@@ -177,8 +177,9 @@ void segfault_sigaction(int signal, siginfo_t *si, void *arg) {
 
 void init_router() {
     // Init default value mappers
-    map_value<ptrdiff_t>( "int");
-    map_value<   size_t>("uint");
+    map_value<ptrdiff_t>(   "int");
+    map_value<   size_t>(  "uint");
+    map_value<   double>("double");
 
     // Init error routes
     error_routes.insert({ 404,
